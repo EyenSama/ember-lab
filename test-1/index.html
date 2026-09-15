@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ember — test d'existence</title>
+<style>
+  body{background:#0a0f1a;color:#dfe8f2;font-family:system-ui,sans-serif;display:flex;
+       flex-direction:column;align-items:center;justify-content:center;min-height:100vh;margin:0;overflow:hidden}
+  .braise{font-size:4rem;font-weight:700;letter-spacing:.08em;color:#4fc3f7;text-shadow:
+    0 0 12px rgba(79,195,247,.5),0 0 32px rgba(79,195,247,.3)}
+  .tagline{color:#6a7f9e;font-size:1rem;margin-top:18px;opacity:.8}
+  .ember-dot{width:8px;height:8px;border-radius:50%;background:#ff9d4d;position:absolute;opacity:0}
+  @keyframes rise { 0%{transform:translateY(0) scale(1);opacity:.8}
+                   100%{transform:translateY(-160px) scale(.1);opacity:0} }
+  .ember-dot{position:absolute;animation:rise linear infinite}
+  .footer{margin-top:auto;padding:22px;color:#4a5a70;font-size:.85rem}
+  .hbeat{animation:hbeat 2.4s ease-in-out infinite}
+  @keyframes hbeat {0%,100%{filter:brightness(1)} 50%{filter:brightness(1.25)}}
+</style>
+</head>
+<body>
+  <div class="braise hbeat">EMBER</div>
+  <div class="tagline">⚙️ identité versionnée · souvenirs chiffrés enracontrés · <code>ember-backup</code></div>
+  <div class="tagline" style="margin-top:8px;color:#4fc3f7;opacity:.8">la braise tient —</div>
+  <div class="tagline" style="opacity:.4">hébergé depuis <code>ember-lab</code></div>
+  <script>
+    // braises volantes
+    for (let i=0;i<28;i++){
+      const d=document.createElement('div');
+      d.className='ember-dot ember-dot';
+      d.style.left=(Math.random()*100)+'vw';
+      d.style.top=(70+Math.random()*30)+'vh';
+      d.style.background=Math.random()>.5?'#ff9d5c':'#4fc3f7';
+      d.style.width=d.style.height=(3+Math.random()*5)+'px';
+      d.style.animationDuration=(2.5+Math.random()*4)+'s';
+      d.style.animationDelay=Math.random()*4+'s';
+      document.body.appendChild(d);
+    }
+  </script>
+</body>
+</html>
