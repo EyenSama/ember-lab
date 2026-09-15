@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chronos — calculateur de dates</title>
+<style>
+:root{--bg:#0a1428;--fg:#dce8f5;--accent:#4fc3f7;--muted:#6a7f9e;--border:#1d3050;
+      --card:rgba(6,13,26,.55)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column}
+header{padding:20px;border-bottom:1px solid var(--border);text-align:center}
+header h1{margin:0;font-size:1.5rem;color:var(--accent)}
+header p{margin:4px 0 0;color:var(--muted);font-size:.88rem}
+main{flex:1;padding:22px;max-width:1100px;margin:0 auto;width:100%}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:22px}
+.tab{padding:9px 18px;border:1px solid var(--border);border-radius:9px;background:var(--card);color:var(--muted);cursor:pointer;font-size:.9rem}
+.tab.active{color:var(--accent);border-color:var(--accent);background:rgba(79,195,247,.08)}
+.panel{display:none}
+.panel.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px}
+.card h3{margin:0 0 12px;font-size:1rem;color:var(--accent);font-weight:600}
+label{display:block;font-size:.83rem;color:var(--muted);margin-bottom:5px}
+input[type=date],input[type=number],select,textarea{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:rgba(10,20,40,.6);color:var(--fg);font-size:.94rem;margin-bottom:12px}
+button{padding:9px 20px;border:1px solid var(--accent);border-radius:9px;background:rgba(79,195,247,.08);color:var(--accent);cursor:pointer;font-size:.92rem}
+button:hover{background:rgba(79,195,247,.18)}
+.result{margin-top:14px;padding:12px;border-radius:9px;background:rgba(79,195,247,.05);border-left:3px solid var(--accent);font-size:.95rem;line-height:1.7}
+.result b{color:var(--accent)}
+.muted{color:var(--muted);font-size:.85rem}
+.years{display:flex;gap:16px;flex-wrap:wrap;margin:14px 0}
+.y{background:rgba(79,195,247,.05);border-radius:10px;padding:12px 14px;text-align:center;flex:1;min-width:110px}
+.y b{display:block;font-size:1.35rem;color:var(--accent)}
+.y span{color:var(--muted);font-size:.78rem}
+hr{border:none;border-top:1px solid var(--border);margin:14px 0}
+footer{padding:14px;text-align:center;color:var(--muted);font-size:.8rem;border-top:1px solid var(--border);margin-top:auto}
+@media(max-width:640px){main{padding:14px}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <h1>⏳ Chronos</h1>
+  <p>Calculateur de dates sophistiqué — 4 outils intégrés</p>
+</header>
+<main>
+<div class="tabs">
+<div class="tab active" data-t="diff">📐 Écart entre dates</div>
+<div class="tab" data-t="add">➕ Ajout / soustraction</div>
+<div class="tab" data-t="wd">📅 Jours ouvrables</div>
+<div class="tab" data-t="bd">🎂 Âges & anniversaires</div>
+</div>
+
+<div class="panel active" id="p-diff">
+<div class="grid">
+<div class="card">
+<h3>Écart entre deux dates</h3>
+<label>Date 1</label><input type="date" id="d1">
+<label>Date 2</label><input type="date" id="d2">
+<button onclick="calcDiff()">Calculer lécart</button>
+<div class="result" id="r-diff" hidden></div>
+</div>
+</div>
+</div>
+<div class="panel" id="p-add">
+<div class="grid">
+<div class="card">
+<h3>Ajouter ou soustraire</h3>
+<label>Date de départ</label><input type="date" id="ad">
+<label>Opération</label>
+<select id="aop"><option value="1">Ajouter</option><option value="-1">Soustraire</option></select>
+<label>Année(s)</label><input type="number" id="ay" value="0" min="0">
+<label>Mois</label><input type="number" id="am" value="0" min="0">
+<label>Jours</label><input type="number" id="aj" value="0" min="0">
+<button onclick="calcAdd()">Calculer</button>
+<div class="result" id="r-add" hidden></div>
+</div>
+</div>
+</div>
+<div class="panel" id="p-wd">
+<div class="grid">
+<div class="card"><h3>Jours ouvrables entre deux dates</h3>
+<label>Début</label><input type="date" id="w1">
+<label>Fin</label><input type="date" id="w2">
+<button onclick="calcWorking()">Compter les jours ouvrables</button>
+<div class="result" id="r-wd" hidden></div>
+</div>
+</div>
+</div>
+<div class="panel" id="p-bd">
+<div class="grid">
+<div class="card">
+<h3>Votre âge précis</h3>
+<label>Date de naissance</label><input type="date" id="bd">
+<button onclick="calcAge()">Calculer mon âge</button>
+<div class="result" id="r-age" hidden></div>
+<div class="years" id="age-years" hidden></div>
+<h3 style="margin-top:22px">Prochains anniversaires</h3>
+<div class="muted">Format : Nom1, YYYY-MM-DD, Nom2, YYYY-MM-DD …</div>
+<textarea id="bdl" rows="3" style="width:100%;padding:9px;border:1px solid var(--border);border-radius:8px;background:rgba(10,20,40,.5);color:var(--fg);font-size:.9rem;font-family:inherit" placeholder="Papa, 1958-03-14, Maman, 1962-07-21"></textarea>
+<button onclick="calcBDList()">Calculer les anniversaires à venir</button>
+<div class="result" id="r-bdl" hidden></div>
+</div>
+</div>
+</div>
+</main>
+<footer>Chronos v0.2 — par Ember · répository ember-lab</footer>
+<script>
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));t.classList.add('active');document.getElementById('p-'+t.dataset.t).classList.add('active');}));
+const D=id=>new Date(document.getElementById(id).value+'T00:00:00');
+const fD=d=>d.toLocaleDateString('fr-FR',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+function plural(n,s,is){return n+' '+s+(n>1?'s':'')}
+function db(a,b){return Math.round((b-a)/86400000)}
+function calcDiff(){
+let d1=D('d1'),d2=D('d2');if(!d1||isNaN(d1)||!d2||isNaN(d2))return;
+if(d1>d2)[d1,d2]=[d2,d1];
+let tot=db(d1,d2);
+let y=Math.floor(tot/365.25);let mm=Math.floor((tot-y*365.25)/30.44);let jj=tot-Math.floor(y*365.25)-Math.floor(mm*30.44);
+let el=document.getElementById('r-diff');el.hidden=false;
+el.innerHTML='<b>'+fD(d1)+'</b> ➜ <b>'+fD(d2)+'</b><br>Total : <b>'+plural(tot,'jour')+'</b><br>'+
+'≈ '+y+' année'+(y>1?'s':'')+', '+mm+' mois, '+jj+' jour'+(jj>1?'s':'')+'<br>'+
+'≈ '+Math.floor(tot/7)+' semaine'+(tot/14>1?'s':'')+' · '+(tot/30.44).toFixed(1)+' mois · '+(tot/365.25).toFixed(2)+' année'+(tot/365>1?'s':'');
+}
+function calcAdd(){
+let b=D('ad');if(isNaN(b))return;
+let s=+document.getElementById('aop').value;
+let y=+document.getElementById('ay').value||0;
+let m=+document.getElementById('am').value||0;
+let j=+document.getElementById('aj').value||0;
+let r=new Date(b);r.setFullYear(r.getFullYear()+s*y);r.setMonth(r.getMonth()+s*m);r.setDate(r.getDate()+s*j);
+let el=document.getElementById('r-add');el.hidden=false;
+let d=db(b,r);
+el.innerHTML='Résultat : <b>'+fD(r)+'</b><br><span class="muted">'+(d>=0?'+':'')+d+' jours depuis le départ</span>';
+}
+function calcAge(){
+let b=D('bd');if(isNaN(b))return;
+let now=new Date();now.setHours(0,0,0,0);
+let y=now.getFullYear()-b.getFullYear(),m=now.getMonth()-b.getMonth(),d=now.getDate()-b.getDate();
+if(d<0){m--;d+=new Date(now.getFullYear(),now.getMonth(),0).getDate();}
+if(m<0){y--;m+=12;}
+let tot=db(b,now);
+let next=new Date(now.getFullYear(),b.getMonth(),b.getDate());
+if(next<now)next.setFullYear(next.getFullYear()+1);
+let days=db(now,next);
+let el=document.getElementById('r-age');el.hidden=false;
+el.innerHTML='Vous avez <b>'+y+' années, '+m+' mois, '+d+' jour'+(d>1?'s':'')+'</b> précis<br>'+
+'<span class="muted">'+plural(tot,'jour')+' au total — '+Math.floor(tot/24).toLocaleString()+' heures</span>';
+let yB=document.getElementById('age-years');
+yB.hidden=false;
+yB.innerHTML='<div class="y"><b>'+next.toLocaleDateString('fr',{day:'2-digit',month:'short'})+'</b><span>prochain anniversaire</span></div><div class="y"><b>'+days+' jour'+(days>1?'s':'')+'</b><span>avant la fête</span></div><div class="y"><b>'+(y+1)+' ans</b><span>vous aurez</span></div>';
+}
+function calcBDList(){
+let raw=document.getElementById('bdl').value;
+let parts=raw.split(',').map(x=>x.trim());
+if(parts.length<2)return;
+let rows=[];
+for(let i=0;i+1<parts.length;i+=2){
+let name=parts[i];
+let dob=new Date(parts[i+1]+'T00:00:00');if(isNaN(dob))continue;
+let now=new Date();now.setHours(0,0,0,0);
+let age=now.getFullYear()-dob.getFullYear(),mo=now.getMonth()-dob.getMonth(),d=now.getDate()-dob.getDate();
+if(d<0)mo--;if(mo<0)age--;
+let next=new Date(now.getFullYear(),dob.getMonth(),dob.getDate());
+if(next<now)next.setFullYear(next.getFullYear()+1);
+let days=db(now,next);
+rows.push({n:name,age:age,fr:next.toLocaleDateString('fr-FR',{day:'2-digit',month:'long'}),days:days});
+}
+rows.sort((a,b)=>a.days-b.days);
+let el=document.getElementById('r-bdl');el.hidden=false;
+el.innerHTML=rows.map(r=>r.n+' : <b>'+r.age+' ans</b> — la fête le <b>'+r.fr+'</b> (dans <b>'+r.days+'j</b>)').join('<br>');
+}
+</script>
+</body>
+</html>
